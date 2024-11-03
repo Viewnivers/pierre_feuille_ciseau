@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pierre Feuille Ciseaux</title>
+    <style>
+        body {
+            background-color: white; /* Fond blanc */
+            font-family: Arial, sans-serif; /* Police sans-serif */
+            text-align: center; /* Centre le texte */
+            padding: 20px; /* Espace autour du contenu */
+        }
+
+        .choix {
+            cursor: pointer;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            border: 5px solid transparent; /* Bordure transparente par défaut */
+            border-radius: 5px; /* Coins arrondis pour un meilleur style */
+            transition: border-color 0.3s; /* Transition pour un effet fluide */
+        }
+
+        .choix.selected {
+            border-color: blue; /* Bordure bleue lorsque sélectionnée */
+        }
+
+        #resultat, #animation {
+            font-size: 64px; /* Taille de police pour l'animation et le résultat */
+            color: #333; /* Couleur du texte */
+            display: none; /* Cacher l'animation initialement */
+            position: absolute; /* Positionner au milieu de l'écran */
+            top: 50%; /* Centrer verticalement */
+            left: 50%; /* Centrer horizontalement */
+            transform: translate(-50%, -50%); /* Ajuster pour centrer parfaitement */
+        }
+
+        #game {
+            display: block; /* Afficher le jeu initialement */
+        }
+
+        #replay {
+            display: none; /* Cacher le bouton "Rejouer" au départ */
+            margin-top: 20px; /* Espacement au-dessus du bouton */
+            padding: 10px 20px; /* Espacement intérieur du bouton */
+            font-size: 24px; /* Taille de la police du bouton */
+            cursor: pointer; /* Changer le curseur en main */
+        }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <h2>Jouer</h2>
+        <form id="form">
+            <fieldset>
+                <legend>Faites votre choix</legend>
+
+                <input type="radio" name="choix" value="0" id="pierre" style="display: none;">
+                <label for="pierre">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Basalt_-_amygdaloidal_structure.jpg/320px-Basalt_-_amygdaloidal_structure.jpg" alt="Pierre" class="choix" onclick="selectImage(this, 'pierre')">
+                </label>
+
+                <input type="radio" name="choix" value="1" id="feuille" style="display: none;">
+                <label for="feuille">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Leaf_1_web.jpg/320px-Leaf_1_web.jpg" alt="Feuille" class="choix" onclick="selectImage(this, 'feuille')">
+                </label>
+
+                <input type="radio" name="choix" value="2" id="ciseaux" style="display: none;">
+                <label for="ciseaux">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Pair_of_scissors_with_black_handle%2C_2015-06-07.jpg/288px-Pair_of_scissors_with_black_handle%2C_2015-06-07.jpg" alt="Ciseaux" class="choix" onclick="selectImage(this, 'ciseaux')">
+                </label>
+            </fieldset>
+
+            <button type="submit">Envoyer</button>
+        </form>
+    </div>
+
+    <div id="animation"></div>
+    <div id="resultat"></div>
+    <button id="replay" onclick="replayGame()">Rejouer</button>
+
+    <script>
+        // Fonction pour gérer la sélection de l'image
+        function selectImage(selectedImage, radioId) {
+            // Supprimer la classe 'selected' de toutes les images
+            const allImages = document.querySelectorAll('.choix');
+            allImages.forEach(image => image.classList.remove('selected'));
+
+            // Ajouter la classe 'selected' à l'image sélectionnée
+            selectedImage.classList.add('selected');
+
+            // Sélectionner le bouton radio correspondant
+            document.getElementById(radioId).checked = true;
+        }
+
+        document.getElementById("form").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const choixJoueur = document.querySelector('input[name="choix"]:checked').value;
+            const choixMachine = Math.floor(Math.random() * 3);
+
+            // Masquer le jeu
+            document.getElementById("game").style.display = "none";
+
+            // Affichage de l'animation de compte à rebours
+            const animationElement = document.getElementById("animation");
+            animationElement.style.display = "block"; // Afficher l'animation
+
+            let words = ["Pierre", "Feuille", "Ciseaux"];
+            let currentIndex = 0;
+            const wordInterval = setInterval(() => {
+                animationElement.innerHTML = words[currentIndex];
+                currentIndex++;
+
+                if (currentIndex >= words.length) {
+                    clearInterval(wordInterval);
+                    setTimeout(() => {
+                        animationElement.style.display = "none"; // Masquer l'animation
+                        displayResult(choixJoueur, choixMachine); // Afficher le résultat
+                    }, 500); // Masquer l'animation après 500 ms
+                }
+            }, 1000); // Afficher chaque mot pendant 1 seconde
+        });
+
+        // Fonction pour afficher le résultat final
+        function displayResult(choixJoueur, choixMachine) {
+            let resultatDecrypter = "";
+            let choixJoueurDecrypter = choixJoueur == 0 ? "Pierre" : choixJoueur == 1 ? "Feuille" : "Ciseaux";
+            let choixMachineDecrypter = choixMachine == 0 ? "Pierre" : choixMachine == 1 ? "Feuille" : "Ciseaux";
+
+            // Détermination du résultat
+            if (choixJoueur == choixMachine) {
+                resultatDecrypter = "Égalité";
+            } else if (
+                (choixJoueur == 0 && choixMachine == 2) || 
+                (choixJoueur == 1 && choixMachine == 0) || 
+                (choixJoueur == 2 && choixMachine == 1)
+            ) {
+                resultatDecrypter = "Vous avez gagné !";
+            } else {
+                resultatDecrypter = "La machine a gagné !";
+            }
+
+            // Affichage du résultat final
+            const resultatElement = document.getElementById("resultat");
+            resultatElement.innerHTML = `
+                Vous: ${choixJoueurDecrypter} <br>
+                Machine: ${choixMachineDecrypter} <br>
+                ${resultatDecrypter}
+            `;
+            resultatElement.style.display = "block"; // Afficher le résultat
+
+            // Afficher le bouton "Rejouer" après 2 secondes
+            setTimeout(() => {
+                document.getElementById("replay").style.display = "block"; // Afficher le bouton "Rejouer"
+            }, 2000); // Durée d'affichage du résultat
+        }
+
+        // Fonction pour rejouer
+        function replayGame() {
+            // Réinitialiser l'état de jeu
+            document.getElementById("game").style.display = "block"; // Réafficher le jeu
+            document.getElementById("animation").style.display = "none"; // Cacher l'animation
+            document.getElementById("resultat").style.display = "none"; // Cacher le résultat
+            document.getElementById("replay").style.display = "none"; // Cacher le bouton "Rejouer"
+
+            // Réinitialiser les sélections
+            document.querySelectorAll('input[name="choix"]').forEach(input => input.checked = false);
+            const allImages = document.querySelectorAll('.choix');
+            allImages.forEach(image => image.classList.remove('selected'));
+        }
+    </script>
+</body>
+</html>
